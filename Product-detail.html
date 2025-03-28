@@ -3,9 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Product Detail</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            max-width: 900px;
+            gap: 30px;
+        }
+        .product-image img {
+            max-width: 300px;
+            height: auto;
+        }
+        .product-info {
+            flex-grow: 1;
+        }
+        .cart-section {
+            width: 200px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+        }
+        .cart-section select, .cart-section button {
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="product-image">
+            <img id="productImage" src="" alt="Product Image">
+        </div>
+        <div class="product-info">
+            <h1 id="productTitle"></h1>
+            <p><strong>Price:</strong> <span id="productPrice"></span></p>
+            <h3>Product details</h3>
+            <p id="productDescription"></p>
+        </div>
+        <div class="cart-section">
+            <p id="cartPrice"></p>
+            <label for="quantity">Quantity:</label>
+            <select id="quantity">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+            <button id="addToCart">Add to Cart</button>
+            <button onclick="window.location.href='shopping-cart.html'">Go to Cart</button>
+        </div>
+    </div>
     
+    <script src="Products.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get("id");
+            const product = products.find(p => p.id == productId);
+            
+            if (product) {
+                document.getElementById("productImage").src = product.thumbnail;
+                document.getElementById("productTitle").textContent = product.title;
+                document.getElementById("productPrice").textContent = `$${product.price.toFixed(2)}`;
+                document.getElementById("productDescription").textContent = product.description;
+                document.getElementById("cartPrice").textContent = `$${product.price.toFixed(2)}`;
+            }
+            
+            document.getElementById("quantity").addEventListener("change", function() {
+                const quantity = parseInt(this.value);
+                document.getElementById("cartPrice").textContent = `$${(product.price * quantity).toFixed(2)}`;
+            });
+            
+            document.getElementById("addToCart").addEventListener("click", function() {
+                const quantity = parseInt(document.getElementById("quantity").value);
+                if (quantity > 0) {
+                    let shoppingCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+                    const existingProduct = shoppingCart.find(item => item.productId == product.id);
+                    if (existingProduct) {
+                        existingProduct.quantity += quantity;
+                    } else {
+                        shoppingCart.push({ productId: product.id, quantity });
+                    }
+                    localStorage.setItem("shoppingCart", JSON.stringify(shoppingCart));
+                    alert("Product added to cart!");
+                } else {
+                    alert("Please select a quantity");
+                }
+            });
+        });
+    </script>
 </body>
 </html>
