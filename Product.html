@@ -9,27 +9,47 @@
         body {
             text-align: center;
             font-family: 'Poppins', sans-serif;
+            background-color: #A1887F;
         }
         h1 {
             text-align: center;
             font-size: 2.5em;
+        }
+        .wrapper {
+        max-width: 1200px; /* Set the maximum width of the content */
+        margin: 0 auto; /* Center the content horizontally */
+        padding: 0 20px; /* Add padding for extra space on the sides */
         }
         .filters {
             display: flex;
             justify-content: center;
             gap: 20px;
             margin-bottom: 20px;
+            height : auto;
+            flex-wrap:wrap;
         }
         .filters select, .filters input, .filters button {
             font-size: 1.4em;
             padding: 12px;
+            width : 200px;
+            border-radius: 15px;
+            border: 2px solid #BCAAA4
+            
+        }
+        .filters select {
+            margin-top: 5px;
         }
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
+            gap: 40px;
             padding: 20px;
             justify-items: center;
+        }
+        .product-grid > div {
+            border-radius: 25px;
+            background-color: #D7CCC8;
+            
         }
         .product-card {
             border: 1px solid #ddd;
@@ -42,9 +62,25 @@
             max-width: 100%;
             height: auto;
         }
+        #applyFilters {
+            background-color: #8D6E63;
+        }
+        @media (max-width: 768px) {
+    .filters {
+        flex-direction: column; /* Stack filter elements vertically */
+        align-items: center; /* Center align the elements */
+        gap: 10px; /* Reduce gap between elements */
+    }
+
+    .filters select, .filters input, .filters button {
+        width: 100%; /* Make elements take full width */
+        max-width: none; /* Remove max-width restriction */
+    }
+}
     </style>
 </head>
 <body>
+    <div class="wrapper">
     <header>
         <h1>Our Products</h1>
         <div class="filters">
@@ -131,5 +167,6 @@
             displayProducts(products);
         });
     </script>
+    </div>
 </body>
 </html>
