@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,41 +14,51 @@
             padding: 20px;
             background-color: #A1887F;
         }
+
         .container {
             display: flex;
             max-width: 900px;
             gap: 30px;
             background-color: #D7CCC8;
             border-radius: 25px;
-            margin-top : 15%;
+            margin-top: 15%;
         }
+
         .product-image img {
             max-width: 300px;
             height: auto;
         }
+
         .product-info {
             flex-grow: 1;
         }
+
         .cart-section {
             width: 200px;
             padding: 15px;
             text-align: center;
         }
-        .cart-section select, .cart-section button {
+
+        .cart-section select,
+        .cart-section button {
             width: 100%;
             margin-top: 10px;
         }
+
         #productPrice {
             font-size: 20px;
             color: #FF5722;
         }
+
         #cartPrice {
             font-size: 20px;
             color: #FF5722;
         }
-        .cart-section > label {
+
+        .cart-section>label {
             font-size: 18px;
         }
+
         #addToCart {
             background-color: #BCAAA4;
             color: white;
@@ -57,6 +68,7 @@
             width: 100px;
             border-radius: 10px;
         }
+
         #goToCart {
             background-color: #BCAAA4;
             color: white;
@@ -68,6 +80,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="product-image">
@@ -91,17 +104,17 @@
                 <option value="4">4</option>
             </select>
             <button id="addToCart">Add to Cart</button>
-            <button id= "goToCart" onclick="window.location.href='shopping-cart.html'">Go to Cart</button>
+            <button id="goToCart" onclick="window.location.href='shopping-cart.html'">Go to Cart</button>
         </div>
     </div>
-    
+
     <script src="Products.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get("id");
             const product = products.find(p => p.id == productId);
-            
+
             if (product) {
                 document.getElementById("productImage").src = product.thumbnail;
                 document.getElementById("productTitle").textContent = product.title;
@@ -109,13 +122,13 @@
                 document.getElementById("productDescription").textContent = product.description;
                 document.getElementById("cartPrice").textContent = `$${product.price.toFixed(2)}`;
             }
-            
-            document.getElementById("quantity").addEventListener("change", function() {
+
+            document.getElementById("quantity").addEventListener("change", function () {
                 const quantity = parseInt(this.value);
                 document.getElementById("cartPrice").textContent = `$${(product.price * quantity).toFixed(2)}`;
             });
-            
-            document.getElementById("addToCart").addEventListener("click", function() {
+
+            document.getElementById("addToCart").addEventListener("click", function () {
                 const quantity = parseInt(document.getElementById("quantity").value);
                 if (quantity > 0) {
                     let shoppingCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
@@ -134,4 +147,5 @@
         });
     </script>
 </body>
+
 </html>
