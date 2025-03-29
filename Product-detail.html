@@ -6,6 +6,7 @@
     <title>Product Detail</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* Styling for body to center content and apply background color */
         body {
             font-family: 'Poppins', sans-serif;
             display: flex;
@@ -13,6 +14,8 @@
             padding: 20px;
             background-color: #A1887F;
         }
+        
+        /* Main container holding product image, details, and cart section */
         .container {
             display: flex;
             max-width: 900px;
@@ -21,43 +24,49 @@
             border-radius: 25px;
             margin-top : 15%;
         }
+        
+        /* Styling for product image */
         .product-image img {
             max-width: 300px;
             height: auto;
         }
+        
+        /* Section for product information */
         .product-info {
             flex-grow: 1;
         }
+        
+        /* Styling for the cart section */
         .cart-section {
             width: 200px;
             padding: 15px;
             text-align: center;
         }
+        
+        /* Ensure buttons and dropdown take full width */
         .cart-section select, .cart-section button {
             width: 100%;
             margin-top: 10px;
         }
+        
+        /* Styling for price display */
         #productPrice {
             font-size: 20px;
             color: #FF5722;
         }
+        
         #cartPrice {
             font-size: 20px;
             color: #FF5722;
         }
+        
+        /* Label styling inside the cart section */
         .cart-section > label {
             font-size: 18px;
         }
-        #addToCart {
-            background-color: #BCAAA4;
-            color: white;
-            border: none;
-            padding: 10px;
-            font-size: 18px;
-            width: 100px;
-            border-radius: 10px;
-        }
-        #goToCart {
+        
+        /* Button styling for adding to cart and navigating to cart */
+        #addToCart, #goToCart {
             background-color: #BCAAA4;
             color: white;
             border: none;
@@ -70,9 +79,12 @@
 </head>
 <body>
     <div class="container">
+        <!-- Product image section -->
         <div class="product-image">
             <img id="productImage" src="" alt="Product Image">
         </div>
+        
+        <!-- Product information section -->
         <div class="product-info">
             <h1 id="productTitle"></h1>
             <hr>
@@ -81,6 +93,8 @@
             <h3>Product details</h3>
             <p id="productDescription"></p>
         </div>
+        
+        <!-- Shopping cart section -->
         <div class="cart-section">
             <p id="cartPrice"></p>
             <label for="quantity">Quantity:</label>
@@ -95,13 +109,18 @@
         </div>
     </div>
     
+    <!-- External script file for handling product data -->
     <script src="Products.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // Get product ID from URL query parameters
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get("id");
+            
+            // Find the product in the products array
             const product = products.find(p => p.id == productId);
             
+            // If product is found, populate the page with its details
             if (product) {
                 document.getElementById("productImage").src = product.thumbnail;
                 document.getElementById("productTitle").textContent = product.title;
@@ -110,21 +129,27 @@
                 document.getElementById("cartPrice").textContent = `$${product.price.toFixed(2)}`;
             }
             
+            // Update cart price when quantity is changed
             document.getElementById("quantity").addEventListener("change", function() {
                 const quantity = parseInt(this.value);
                 document.getElementById("cartPrice").textContent = `$${(product.price * quantity).toFixed(2)}`;
             });
             
+            // Add product to cart when "Add to Cart" button is clicked
             document.getElementById("addToCart").addEventListener("click", function() {
                 const quantity = parseInt(document.getElementById("quantity").value);
                 if (quantity > 0) {
                     let shoppingCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
                     const existingProduct = shoppingCart.find(item => item.productId == product.id);
+                    
+                    // If product already exists in cart, update quantity
                     if (existingProduct) {
                         existingProduct.quantity += quantity;
                     } else {
                         shoppingCart.push({ productId: product.id, quantity });
                     }
+                    
+                    // Save updated cart to localStorage
                     localStorage.setItem("shoppingCart", JSON.stringify(shoppingCart));
                     alert("Product added to cart!");
                 } else {
