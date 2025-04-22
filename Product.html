@@ -7,26 +7,28 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
-            text-align: center;
             font-family: 'Poppins', sans-serif;
             background-color: #A1887F;
+            text-align: center;
         }
         h1 {
-            text-align: center;
             font-size: 2.5em;
+            margin: 20px;
         }
         .wrapper {
-            max-width: 1200px; /* Keeps the content centered and not too wide */
+            max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
+        header {
+            margin-bottom: 20px;
+        }
         .filters {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             gap: 20px;
             margin-bottom: 20px;
-            height: auto;
-            flex-wrap: wrap; /* Makes filters wrap nicely on smaller screens */
+            flex-wrap: wrap;
         }
         .filters select, .filters input, .filters button {
             font-size: 1.4em;
@@ -37,25 +39,92 @@
         }
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Creates responsive grid */
-            gap: 40px;
-            padding: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
             justify-items: center;
+            padding: 20px;
         }
         .product-card {
             border: 1px solid #ddd;
             padding: 15px;
             text-align: center;
             max-width: 250px;
-            border-radius: 25px;
+            border-radius: 15px;
             background-color: #D7CCC8;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .product-card img {
             max-width: 100%;
             height: auto;
+            border-radius: 10px;
         }
-        #applyFilters {
+        .carousel-container {
+            margin-bottom: 20px;
+        }
+        .carousel-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            background-color: #BCAAA4;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+        .carousel-button {
             background-color: #8D6E63;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        .carousel-button:hover {
+            background-color: #6D4C41;
+        }
+        .quantity-controls {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .quantity-controls button {
+            padding: 10px;
+            font-size: 1.4em;
+            border-radius: 5px;
+            border: 2px solid #BCAAA4;
+            cursor: pointer;
+            background-color: #8D6E63;
+            color: white;
+        }
+        .quantity-controls input {
+            width: 50px;
+            text-align: center;
+            font-size: 1.4em;
+            border: none;
+            background-color: transparent;
+        }
+        .quantity-controls button:hover {
+            background-color: #6D4C41;
+        }
+        .add-to-cart {
+            background-color: #8D6E63;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        .add-to-cart:hover {
+            background-color: #6D4C41;
         }
         @media (max-width: 768px) {
             .filters {
@@ -87,6 +156,7 @@
             </div>
         </header>
         <main>
+            
             <div class="product-grid" id="productGrid">
                 <!-- Products will be dynamically added here -->
             </div>
@@ -99,9 +169,9 @@
                 const searchBox = document.getElementById("searchBox");
                 const sortFilter = document.getElementById("sortFilter");
                 const applyFilters = document.getElementById("applyFilters");
-                
+
                 function displayProducts(products) {
-                    productGrid.innerHTML = ""; // Clears the grid before displaying new products
+                    productGrid.innerHTML = "";
                     products.forEach(product => {
                         const productCard = document.createElement("div");
                         productCard.classList.add("product-card");
@@ -111,13 +181,79 @@
                             </a>
                             <h3>${product.title}</h3>
                             <p>$${product.price.toFixed(2)}</p>
+                            <button class="add-to-cart" data-id="${product.id}">Add to Cart</button>
+                            <div class="quantity-controls" id="quantity-controls-${product.id}">
+                                <button class="decrease">-</button>
+                                <input type="text" value="1" id="quantity-${product.id}" readonly>
+                                <button class="increase">+</button>
+                            </div>
                         `;
                         productGrid.appendChild(productCard);
                     });
+
+                    // Add event listeners for the add-to-cart buttons and quantity controls
+                    const addToCartButtons = document.querySelectorAll(".add-to-cart");
+                    addToCartButtons.forEach(button => {
+                        button.addEventListener("click", function() {
+                            const productId = button.dataset.id;
+                            toggleQuantityControls(productId);
+                            addToCart(productId, 1); // Add product to the cart with quantity 1
+                        });
+                    });
+
+                    const increaseButtons = document.querySelectorAll(".increase");
+                    increaseButtons.forEach(button => {
+                        button.addEventListener("click", function() {
+                            const productId = button.closest(".product-card").querySelector(".add-to-cart").dataset.id;
+                            updateQuantity(productId, 1);
+                        });
+                    });
+
+                    const decreaseButtons = document.querySelectorAll(".decrease");
+                    decreaseButtons.forEach(button => {
+                        button.addEventListener("click", function() {
+                            const productId = button.closest(".product-card").querySelector(".add-to-cart").dataset.id;
+                            updateQuantity(productId, -1);
+                        });
+                    });
                 }
-                
+
+                function toggleQuantityControls(productId) {
+                    const addToCartButton = document.querySelector(`[data-id='${productId}']`);
+                    const quantityControls = document.getElementById(`quantity-controls-${productId}`);
+                    addToCartButton.style.display = "none";  // Hide Add to Cart button
+                    quantityControls.style.display = "flex";  // Show quantity controls
+                    setTimeout(() => {
+                        quantityControls.style.opacity = 1;  // Smoothly reveal the controls
+                    }, 50);
+                }
+
+                function addToCart(productId, quantity) {
+                    let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+                    const existingItem = cart.find(item => item.productId === productId);
+                    if (existingItem) {
+                        existingItem.quantity += quantity;
+                    } else {
+                        cart.push({ productId, quantity });
+                    }
+                    localStorage.setItem("shoppingCart", JSON.stringify(cart));
+                }
+
+                function updateQuantity(productId, change) {
+                    let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+                    const itemIndex = cart.findIndex(item => item.productId === productId);
+                    if (itemIndex !== -1) {
+                        let newQuantity = cart[itemIndex].quantity + change;
+                        if (newQuantity >= 0) {
+                            cart[itemIndex].quantity = newQuantity;
+                            document.getElementById(`quantity-${productId}`).value = newQuantity;
+                            localStorage.setItem("shoppingCart", JSON.stringify(cart));
+                        }
+                    }
+                }
+
                 function populateCategories() {
-                    let categories = [...new Set(products.map(p => p.category))]; // Get unique categories
+                    let categories = [...new Set(products.map(p => p.category))];
                     categories.forEach(category => {
                         const option = document.createElement("option");
                         option.value = category;
@@ -125,14 +261,13 @@
                         categoryFilter.appendChild(option);
                     });
                 }
-                
+
                 function filterAndSortProducts() {
                     let filteredProducts = products.filter(product => {
                         return (categoryFilter.value === "all" || product.category === categoryFilter.value) &&
                                (searchBox.value === "" || product.title.toLowerCase().includes(searchBox.value.toLowerCase()));
                     });
-                    
-                    // Sort products based on user selection
+
                     if (sortFilter.value === "lowToHigh") {
                         filteredProducts.sort((a, b) => a.price - b.price);
                     } else if (sortFilter.value === "highToLow") {
@@ -140,25 +275,23 @@
                     }
                     displayProducts(filteredProducts);
                 }
-                
-                // Event listeners for filtering and sorting
+
                 applyFilters.addEventListener("click", filterAndSortProducts);
                 categoryFilter.addEventListener("change", () => {
-                    searchBox.value = ""; // Clears search when category changes
+                    searchBox.value = "";
                     sortFilter.value = "none";
                     filterAndSortProducts();
                 });
-                
+
                 searchBox.addEventListener("keypress", function(event) {
                     if (event.key === "Enter") {
                         filterAndSortProducts();
                     }
                 });
-                
-                populateCategories(); // Loads categories into filter dropdown
-                displayProducts(products); // Displays all products on page load
+
+                populateCategories();
+                displayProducts(products);
             });
         </script>
-    </div>
 </body>
 </html>
