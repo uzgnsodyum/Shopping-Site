@@ -27,48 +27,48 @@
         }
 
         .cart-grid {
-            flex: 3; /* Takes up more space for the product list */
+            flex: 3;
             display: flex;
-            flex-direction: column; /* Display products vertically */
+            flex-direction: column;
             gap: 20px;
             padding: 20px;
-            width: 100%; /* Ensure it takes full width on smaller screens */
-            box-sizing: border-box; 
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .cart-item {
-            display: flex; /* Use Flexbox for layout */
-            align-items: center; /* Align items vertically */
-            gap: 20px; /* Add space between image and info */
+            display: flex;
+            align-items: center;
+            gap: 20px;
             border: 1px solid #ddd;
             border-radius: 15px;
             background-color: #D7CCC8;
             padding: 15px;
-            flex-wrap: wrap; 
+            flex-wrap: wrap;
         }
 
         .cart-item img {
-            max-width: 150px; /* Set a fixed width for the image */
+            max-width: 150px;
             height: auto;
             border-radius: 10px;
             flex-shrink: 0;
         }
 
         .cart-item-info {
-            flex: 1; /* Allow the info section to take up remaining space */
-            text-align: left; /* Align text to the left */
+            flex: 1;
+            text-align: left;
             word-wrap: break-word;
         }
 
         .cart-summary {
             margin-top: 20px;
             font-size: 1.5em;
-            text-align: left; /* Align text to the left */
+            text-align: left;
             background-color: #D7CCC8;
             padding: 20px;
             border-radius: 15px;
-            max-width: 300px; /* Limit the width of the summary */
-            width: 100%; /* Ensure it only takes up as much space as its content */
+            max-width: 300px;
+            width: 100%;
             align-self: flex-start;
             box-sizing: border-box;
         }
@@ -78,24 +78,25 @@
             font-size: 1.2em;
             cursor: pointer;
             margin-top: 10px;
-            width: 100%; /* Buttons take full width */
+            width: 100%;
         }
 
         @media (max-width: 768px) {
             .wrapper {
-                flex-direction: column; /* Stack the cart grid and summary vertically */
-                align-items: center; /* Center align the child elements */
+                flex-direction: column;
+                align-items: center;
             }
 
             .cart-summary {
-                max-width: 100%; /* Allow the summary to take the full width */
-                text-align: center; /* Center-align text for better readability */
+                max-width: 100%;
+                text-align: center;
             }
 
             .cart-grid {
-                width: 100%; /* Ensure the product list takes the full width */
+                width: 100%;
             }
         }
+
         button {
             background-color: #BCAAA4;
             color: white;
@@ -104,6 +105,33 @@
             font-size: 18px;
             border-radius: 10px;
         }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-controls input {
+            width: 50px;
+            text-align: center;
+        }
+
+        .note-input {
+            width: 100%;
+            margin-top: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .shipping-info {
+            font-size: 1.2em;
+            color: #FF5722;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -112,9 +140,10 @@
             <!-- Cart items will be dynamically added here -->
         </div>
         <div class="cart-summary" id="cartSummary">
-            <!-- Total price and checkout button will be displayed here -->
+            <!-- Summary will be displayed here -->
         </div>
     </div>
+
     <script src="Products.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -132,6 +161,7 @@
             function displayCartItems() {
                 cartGrid.innerHTML = "";
                 let totalPrice = 0;
+                let deliveryPrice = 0;
 
                 if (shoppingCart.length === 0) {
                     cartGrid.innerHTML = "<p>Your cart is empty.</p>";
@@ -139,7 +169,7 @@
                     cartSummary.style.display = "none";
                     return;
                 }
-                
+
                 cartSummary.style.display = "block";
 
                 shoppingCart.forEach(item => {
@@ -154,56 +184,78 @@
                             <div class="cart-item-info">
                                 <h3>${product.title}</h3>
                                 <p>Price: $${product.price.toFixed(2)}</p>
-                                <div>
-                                    <button class="decrease" data-id="${product.id}">-</button>
-                                    <span id="quantity-${product.id}">${item.quantity}</span>
-                                    <button class="increase" data-id="${product.id}">+</button>
+                                <div class="quantity-controls">
+                                    <input type="number" id="quantity-${product.id}" value="${item.quantity}" min="1" max="${product.stock}" />
                                 </div>
-                                <p>Total: $${(product.price * item.quantity).toFixed(2)}</p>
+                                <textarea class="note-input" id="note-${product.id}" placeholder="Add a note (e.g., gift wrapping)"></textarea>
+                                <p>Total: $<span id="total-price-${product.id}">${(product.price * item.quantity).toFixed(2)}</span></p>
+                                <button class="delete-item" data-id="${product.id}">Remove Item</button>
                             </div>
                         `;
                         cartGrid.appendChild(cartItem);
 
-                        // Add event listeners for increase and decrease buttons
-                        document.querySelector(`[data-id="${product.id}"].increase`).addEventListener("click", function() {
-                            updateQuantity(product.id, 1);
+                        // Add event listener for manual quantity change
+                        document.getElementById(`quantity-${product.id}`).addEventListener("change", function(event) {
+                            let newQuantity = parseInt(event.target.value);
+                            if (newQuantity > 0 && newQuantity <= product.stock) {
+                                updateQuantity(product.id, newQuantity - item.quantity);
+                            } else {
+                                event.target.value = item.quantity; // revert to original quantity if invalid
+                            }
                         });
 
-                        document.querySelector(`[data-id="${product.id}"].decrease`).addEventListener("click", function() {
-                            updateQuantity(product.id, -1);
+                        // Add event listener for removing item
+                        document.querySelector(`[data-id="${product.id}"].delete-item`).addEventListener("click", function() {
+                            removeItemFromCart(product.id);
                         });
                     }
                 });
 
-                cartSummary.innerHTML = ` 
+                // Delivery price condition
+                if (totalPrice < 1000) {
+                    deliveryPrice = 50;
+                    const amountForFreeShipping = 1000 - totalPrice;
+                    cartSummary.innerHTML = `
+                        <div class="shipping-info">
+                            Add $${amountForFreeShipping.toFixed(2)} to your cart for free shipping!
+                        </div>
+                    `;
+                } else {
+                    deliveryPrice = 0;
+                }
+
+                const totalAmount = totalPrice + deliveryPrice;
+
+                // Update total values
+                cartSummary.innerHTML += ` 
                     <p><strong>Total Price:</strong> $${totalPrice.toFixed(2)}</p>
+                    <p><strong>Delivery Price:</strong> $${deliveryPrice.toFixed(2)}</p>
+                    <p><strong>Total Amount:</strong> $${totalAmount.toFixed(2)}</p>
                     <button id="checkoutButton">Proceed to Checkout</button>
                     <button id="clearCartButton">Clear Cart</button>
                 `;
-
-                // Add functionality to the "Clear Cart" button
-                document.getElementById("clearCartButton").addEventListener("click", function() {
-                    localStorage.removeItem("shoppingCart");
-                    alert("Shopping cart has been cleared!");
-                    location.reload();
-                });
-
-                // Add functionality to the "Checkout" button
-                document.getElementById("checkoutButton").addEventListener("click", function() {
-                    alert("Checkout functionality is not implemented yet!");
-                });
             }
 
             function updateQuantity(productId, change) {
                 const itemIndex = shoppingCart.findIndex(item => item.productId === productId);
                 if (itemIndex !== -1) {
                     let newQuantity = shoppingCart[itemIndex].quantity + change;
-                    if (newQuantity >= 0) {
+                    if (newQuantity >= 0 && newQuantity <= products.find(p => p.id == productId).stock) {
                         shoppingCart[itemIndex].quantity = newQuantity;
-                        document.getElementById(`quantity-${productId}`).innerText = newQuantity;
+                        document.getElementById(`quantity-${productId}`).value = newQuantity;
+                        document.getElementById(`total-price-${productId}`).textContent = (products.find(p => p.id == productId).price * newQuantity).toFixed(2);
                         localStorage.setItem("shoppingCart", JSON.stringify(shoppingCart));
                         displayCartItems(); // Re-render the cart
                     }
+                }
+            }
+
+            function removeItemFromCart(productId) {
+                const itemIndex = shoppingCart.findIndex(item => item.productId === productId);
+                if (itemIndex !== -1) {
+                    shoppingCart.splice(itemIndex, 1);
+                    localStorage.setItem("shoppingCart", JSON.stringify(shoppingCart));
+                    displayCartItems(); // Re-render the cart
                 }
             }
 

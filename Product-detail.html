@@ -11,8 +11,10 @@
             font-family: 'Poppins', sans-serif;
             display: flex;
             justify-content: center;
-            padding: 20px;
+            padding: 10px 20px;
             background-color: #A1887F;
+            flex-direction: column;
+            align-items: center;
         }
         
         /* Main container holding product image, details, and cart section */
@@ -22,23 +24,32 @@
             gap: 30px;
             background-color: #D7CCC8;
             border-radius: 25px;
-            margin-top : 15%;
+            padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-top: 0%;
         }
         
         /* Styling for product image */
         .product-image img {
             max-width: 300px;
             height: auto;
+            border-radius: 15px;
         }
         
         /* Section for product information */
         .product-info {
             flex-grow: 1;
+            margin-top: 20px;
+            text-align: left;
+            width: 100%;
         }
         
         /* Styling for the cart section */
         .cart-section {
-            width: 200px;
+            width: 100%;
+            max-width: 250px;
             padding: 15px;
             text-align: center;
         }
@@ -74,6 +85,87 @@
             font-size: 18px;
             width: 100px;
             border-radius: 10px;
+            cursor: pointer;
+        }
+
+        #addToCart:hover, #goToCart:hover {
+            background-color: #6D4C41;
+        }
+
+        /* Reviews section */
+        .reviews-section {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            background-color: #D7CCC8;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .reviews-section h3 {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #4E342E;
+        }
+
+        .review {
+            background-color: #F5F5F5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #BCAAA4;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .review h4 {
+            margin: 0;
+            font-weight: bold;
+            color: #4E342E;
+        }
+
+        .review p {
+            margin: 5px 0;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .review-time {
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .review-rating {
+            color: #FF5722;
+        }
+
+        /* Quantity controls styling */
+        .quantity-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            opacity: 1;
+        }
+
+        .quantity-controls button {
+            font-size: 1.4em;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #BCAAA4;
+            color: white;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .quantity-controls input {
+            width: 50px;
+            text-align: center;
+            font-size: 1.4em;
+            border: none;
+            background-color: transparent;
         }
     </style>
 </head>
@@ -97,16 +189,20 @@
         <!-- Shopping cart section -->
         <div class="cart-section">
             <p id="cartPrice"></p>
-            <label for="quantity">Quantity:</label>
-            <select id="quantity">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-            </select>
+            <div class="quantity-controls">
+                <button id="decreaseQuantity">-</button>
+                <input id="quantityInput" type="text" value="1">
+                <button id="increaseQuantity">+</button>
+            </div>
             <button id="addToCart">Add to Cart</button>
-            <button id= "goToCart" onclick="window.location.href='shopping-cart.html'">Go to Cart</button>
+            <button id="goToCart" onclick="window.location.href='shopping-cart.html'">Go to Cart</button>
         </div>
+    </div>
+
+    <!-- Reviews section -->
+    <div class="reviews-section" id="reviews">
+        <h3>Customer Reviews</h3>
+        <!-- Reviews will be dynamically added here -->
     </div>
     
     <!-- External script file for handling product data -->
@@ -127,17 +223,53 @@
                 document.getElementById("productPrice").textContent = `$${product.price.toFixed(2)}`;
                 document.getElementById("productDescription").textContent = product.description;
                 document.getElementById("cartPrice").textContent = `$${product.price.toFixed(2)}`;
+
+                // Display reviews
+                const reviewsSection = document.getElementById("reviews");
+                product.reviews.forEach(review => {
+                    const reviewElement = document.createElement("div");
+                    reviewElement.classList.add("review");
+                    reviewElement.innerHTML = `
+                        <h4>${review.reviewerName}</h4>
+                        <p class="review-rating">Rating: ${review.rating} stars</p>
+                        <p>${review.comment}</p>
+                        <p class="review-time"><em>${new Date(review.date).toLocaleDateString()}</em></p>
+                    `;
+                    reviewsSection.appendChild(reviewElement);
+                });
+
+                // If no stock value, enable any quantity input
+                if (!product.stock) {
+                    document.getElementById("quantityInput").removeAttribute("readonly");
+                } else {
+                    // Restrict quantity to stock limit
+                    const quantityInput = document.getElementById("quantityInput");
+                    const decreaseButton = document.getElementById("decreaseQuantity");
+                    const increaseButton = document.getElementById("increaseQuantity");
+
+                    increaseButton.addEventListener("click", function() {
+                        if (parseInt(quantityInput.value) < product.stock) {
+                            quantityInput.value = parseInt(quantityInput.value) + 1;
+                        }
+                    });
+
+                    decreaseButton.addEventListener("click", function() {
+                        if (parseInt(quantityInput.value) > 1) {
+                            quantityInput.value = parseInt(quantityInput.value) - 1;
+                        }
+                    });
+                }
             }
-            
+
             // Update cart price when quantity is changed
-            document.getElementById("quantity").addEventListener("change", function() {
+            document.getElementById("quantityInput").addEventListener("input", function() {
                 const quantity = parseInt(this.value);
                 document.getElementById("cartPrice").textContent = `$${(product.price * quantity).toFixed(2)}`;
             });
             
             // Add product to cart when "Add to Cart" button is clicked
             document.getElementById("addToCart").addEventListener("click", function() {
-                const quantity = parseInt(document.getElementById("quantity").value);
+                const quantity = parseInt(document.getElementById("quantityInput").value);
                 if (quantity > 0) {
                     let shoppingCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
                     const existingProduct = shoppingCart.find(item => item.productId == product.id);
@@ -153,7 +285,7 @@
                     localStorage.setItem("shoppingCart", JSON.stringify(shoppingCart));
                     alert("Product added to cart!");
                 } else {
-                    alert("Please select a quantity");
+                    alert("Please select a valid quantity");
                 }
             });
         });
