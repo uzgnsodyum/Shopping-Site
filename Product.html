@@ -22,6 +22,22 @@
         }
         header {
             margin-bottom: 20px;
+            position: relative;
+        }
+        .go-to-cart-btn {
+            position: absolute;
+            top: 10px; /* Adjusted the top value to move the button up */
+            right: 20px;
+            background-color: #8D6E63;
+            color: white;
+            padding: 12px 20px;
+            font-size: 1.4em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .go-to-cart-btn:hover {
+            background-color: #6D4C41;
         }
         .filters {
             display: flex;
@@ -142,6 +158,8 @@
     <div class="wrapper">
         <header>
             <h1>Our Products</h1>
+            <!-- Go to Cart Button -->
+            <button class="go-to-cart-btn" onclick="window.location.href='shopping-cart.html'">Go to Cart</button>
             <div class="filters">
                 <select id="categoryFilter">
                     <option value="all">All Categories</option>
@@ -156,7 +174,6 @@
             </div>
         </header>
         <main>
-            
             <div class="product-grid" id="productGrid">
                 <!-- Products will be dynamically added here -->
             </div>
